@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let pointCloud;
 
         loader.load(pcdFile, function (points) {
-            points.material.size = 0.05;
+            points.material.size = 0.005;
             pointCloud = points;
             scene.add(pointCloud);
             const center = points.geometry.boundingSphere.center;
@@ -112,6 +112,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // 初始化两个不同的点云
+    init('container1547', 'controls1547', 'pcd/1547_rgb.pcd');
+    init('container1556', 'controls1556', 'pcd/bifuse_1556_rgb.pcd');
     init('container1', 'controls1', 'pcd/Luca_Biada_flickr_2.pcd');
     init('container2', 'controls2', 'pcd/Luca_Biada_flickr_trainstation.pcd');
 
