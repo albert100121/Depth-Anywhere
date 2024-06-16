@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const center = points.geometry.boundingSphere.center;
             controls.target.set(center.x, center.y, center.z);
             controls.update();
-            camera.position.set(center.x, center.y, center.z + 10);
+            camera.position.set(center.x, center.y - 2, center.z + 2);
             animate();
         });
 
@@ -112,8 +112,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // 初始化两个不同的点云
-    init('container1547', 'controls1547', 'pcd/1547_rgb.pcd');
-    init('container1556', 'controls1556', 'pcd/bifuse_1556_rgb.pcd');
+    init('container1372', 'controls1372', 'pcd/1372_rgb.pcd');
+    init('container1169', 'controls1169', 'pcd/bifuse/1169_rgb.pcd');
     init('container1', 'controls1', 'pcd/Luca_Biada_flickr_2.pcd');
     init('container2', 'controls2', 'pcd/Luca_Biada_flickr_trainstation.pcd');
 
