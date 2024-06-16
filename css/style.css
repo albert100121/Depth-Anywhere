@@ -274,3 +274,16 @@ a:hover:not(.summary):hover{
    width: 100%;
    margin: 0; /* 去除额外的 margin */
 }
+
+/* footnote */
+.footnote {
+   position: relative;
+   cursor: help; /* 让鼠标游标变成帮助提示 */
+   color: #007bff; /* 蓝色，可以根据需求调整颜色 */
+   text-decoration: none; /* 移除默认的下划线 */
+   border-bottom: 1px dashed #007bff; /* 虚线边框，也可以根据需求调整 */
+}
+.footnote:hover {
+   color: #0056b3; /* hover时改变颜色 */
+   border-bottom-color: #0056b3; /* hover时改变边框颜色 */
+}
