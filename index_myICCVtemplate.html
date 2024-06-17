@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0">
+        <meta name="author" content="Ning-Hsu Wang">
+        <meta name="keywords" content="Depth, Depth Estimation, 360, panorama, equirectangular, Monocular, Deep Learning, Neual Network, Ning-Hsu Wang, Albert, Albert Wang" />
+        <meta name="description" content="Depth Anywhere Project page" />
+        <title>Depth Anywhere: Enhancing 360 Monocular Depth Estimation via Perspective Distillation and Unlabeled Data Augmentation</title>
+    
+        <!-- CSS  -->
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection">
+        <link href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection">
+        <!-- <link href="css/font-awesome.min.css" rel="stylesheet"> -->
+        <link rel="icon" type="image/png" href="images/logo.png">
+    </head>
+    <body>
+    
+    <div class="navbar-fixed">
+  
+        <nav class="grey darken-4" role="navigation">
+            <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo"></a>
+            <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
+            <ul class="left hide-on-med-and-down">
+                <li><a class="nav-item waves-effect waves-light" href="#home">Home</a></li>
+                <li><a class="nav-item waves-effect waves-light" href="#abstract">Abstract</a></li>
+                <!-- <li><a class="nav-item waves-effect waves-light" href="#video">Video</a></li> -->
+                <li><a class="nav-item waves-effect waves-light" href="#paper">Paper</a></li>
+                <li><a class="nav-item waves-effect waves-light" href="#download">Download</a></li>
+                <li><a class="nav-item waves-effect waves-light" href="#results">Results</a></li>
+                <!-- <li><a class="nav-item waves-effect waves-light" href="#dataset">Dataset</a></li> -->
+            </ul>
+            </div>
+        </nav>
+    </div>
+  
+    <div class="section no-pad-bot" id="index-banner">
+      <div class="container scrollspy" id="home">
+  
+        <h4 class="header center black-text">Depth Anywhere: Enhancing 360 Monocular Depth Estimation via Perspective Distillation and Unlabeled Data Augmentation</h4>
+        <br>
+  
+        <div class="row center">
+            <h5 class="header col l6 m4 s12">
+                <div class="author"><a href="http://albert100121.github.io/" target="blank">Ning-Hsu Wang</a></div>
+            </h5>
+            <h5 class="header col l6 m4 s12">
+                <div class="author"><a href="https://yulunalexliu.github.io" target="blank">Yu-Lun Liu<sup>1</sup></a></div>
+            </h5>
+        </div>
+        <div class="row center">
+            <h5 class="header col l12 m4 s12">
+                <div class="affiliation"><a href="https://www.nycu.edu.tw/nycu/en/index" target="blank"><sup>1</sup>National Yang Ming Chiao Tung University</a></div>
+            </h5>
+        </div>
+  
+      </div>
+    </div>  
+    <div class="container">
+      <div class="section">
+  
+        <!--   Icon Section   -->
+        <div class="row center">
+          <div class="col l12 m12 s12">
+            <img class="responsive-img" src="images/pipeline/pipeline_v4.pdf">
+          </div>
+          
+        </div>
+  
+      </div>
+  
+      <br>
+  
+      <div class="row section scrollspy" id="abstract">
+        <div class="title">Abstract</div>
+        Accurately estimating depth in 360-degree imagery is crucial for virtual reality, 
+        autonomous navigation, and immersive media applications. 
+        Existing depth estimation methods designed for perspective-view imagery fail when applied to 360-degree images due to different camera projections and distortions, 
+        whereas 360-degree methods perform inferior due to the lack of labeled data pairs. 
+        We propose a new depth estimation framework that utilizes unlabeled 360-degree data effectively. 
+        Our approach uses state-of-the-art perspective depth estimation models as teacher models to generate pseudo labels through a six-face cube projection technique, 
+        enabling efficient labeling of depth in 360-degree images. 
+        This method leverages the increasing availability of large datasets. 
+        Our approach includes two main stages: offline mask generation for invalid regions and an online semi-supervised joint training regime. 
+        We tested our approach on benchmark datasets such as Matterport3D and Stanford2D3D, 
+        showing significant improvements in depth estimation accuracy, 
+        particularly in zero-shot scenarios. 
+        Our proposed training pipeline can enhance any 360 monocular depth estimator and demonstrates effective knowledge transfer across different camera projections and data types.
+      </div>
+
+      <!-- <div class="section row scrollspy" id="video">
+        <div class="title">Video</div>
+            <iframe width="1024" 
+                height="512" 
+                src="" 
+                title="YouTube video player" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen
+                class="col m12 s12 center"></iframe>
+      </div> -->
+
+      <div class="section row scrollspy" id="Preprocess">
+        <div class="title">Methods</div>
+            <p><h5>Valid Pixel Masking</h5></p>
+            We used Grounded-Segment-Anything to mask out invalid pixels based on two text prompts: “sky” and “watermark.” 
+            These regions lack depth sensor ground truth labels in all previous datasets. 
+            Unlike Depth Anything, which sets sky regions as 0 disparity, we follow ground truth training to ignore these regions during training for two reasons: 
+            (1) segmentation may misclassify and set other regions as zero, leading to noisy labeling, and 
+            (2) watermarks are post-processing regions that lack geometrical meaning.
+            <div class="row center">
+                <img src="images/valid_mask/valid_mask_v2.pdf" width="70%">
+                <br>
+            </div>
+            <p><h5>Random Rotation Processing</h5></p>
+            As shown in the center row of the figure, 
+            an undesired cube artifact appears when we apply joint training with pseudo ground truth from Depth Anything directly. 
+            This issue arises from independent relative distances within each cube face caused by a static point of view. 
+            Ignoring cross-cube relationships results in poor knowledge distillation. 
+            To address this, as shown in (c) in the teaser figure, 
+            we randomly rotate the RGB image before inputting it into Depth Anything. 
+            This enables better distillation of depth information from varying perspectives within the equirectangular image.
+            <div class="row center">
+                <img src="images/cube_patent/cube_artifact.pdf" width="70%">
+                <br>
+            </div>
+      </div>
+
+      
+      <div id="paper">
+        <div class="title">Paper</div>
+            <br>
+            <div class="row">
+                <div class="col m6 s12 center">
+                    <a href="" target="_blank">
+                    <img src="images/icon_pdf.png">
+                    </a>
+                    <br>
+                    <a href="" target="_blank">arXiv (tbd)</a>
+                </div>
+                <div class="col m6 s12 center">
+                    <a href="images/paper/01939-supp.pdf" target="_blank">
+                    <img src="images/icon_pdf.png">
+                    </a>
+                    <br>
+                    <a href="images/paper/01939-supp.pdf" target="_blank">Supplementary (tbd)</a>
+                </div>
+            </div>
+
+        </div>
+        <div >
+            <div class="subtitle">Citation</div>
+                <p>Ning-Hsu Wang, Yu-Lun Liu "Depth Anywhere: Enhancing 360 Monocular Depth Estimation via Perspective Distillation and Unlabeled Data Augmentation", preprint, 2024</p>
+                <br>
+            <div class="subtitle">Bibtex</div>
+        </div>
+
+        <div id="download">
+            <div class="title">Download</div>
+            <div class="row">
+    
+            <div class="col m6 s12 center">
+                <a href="" target="_blank">
+                    <img src="images/github.png">
+                </a>
+                <br>
+                <a href="" target="_blank">Code (tbd)</a>
+            </div>
+    
+            <div class="col m6 s12 center">
+                <a href="https://huggingface.co/spaces/Albert-NHWang/Depth-Anywhere-App" target="_blank">
+                    <img src="images/icon_zip.png">
+                </a>
+                <br>
+                <a href="" target="_blank">Gradio Demo</a>
+            </div>
+    
+            </div>
+    
+        </div>
+
+        <div id="results">
+            <div class="title">Results</div>
+            <p><h5>In-domain Qualitative Improvements</h5></p>
+            This is the in-domain qualitative improvements with backbone models (UniFuse and Bifuse++ are selected) trained on Matterport3D train set and test on test set.
+            (p) indicates using the pseudo ground truth training pipeline proposed in our methods.
+            <p>UniFuse</p>
+            <div class="row center">
+                <img src="images/matterport/unifuse_large.pdf" width="70%">
+                <br>
+            </div>
+            <!-- point cloud -->
+            <div class="wrapper">
+                <div class="image-container">
+                    <img id="rgbImage1" src="pcd/1372_rgb.png" alt="RGB Image 1">
+                </div>
+                <div id="container1372" class="pcd_container">
+                    <div id="controls1372" class="controls">
+                        <label for="scale1">Scale:</label>
+                        <input type="range" id="scale1" name="scale" min="0.1" max="10" step="0.1" value="1">
+                        <label for="posX1">Position X:</label>
+                        <input type="range" id="posX1" name="posX" min="-10" max="10" step="0.1" value="0">
+                        <label for="posY1">Position Y:</label>
+                        <input type="range" id="posY1" name="posY" min="-10" max="10" step="0.1" value="0">
+                        <label for="posZ1">Position Z:</label>
+                        <input type="range" id="posZ1" name="posZ" min="-10" max="10" step="0.1" value="0">
+                        <label for="pointSize1">Point Size:</label>
+                        <input type="range" id="pointSize1" name="pointSize" min="0.001" max="0.1" step="0.001" value="0.001">
+                    </div>
+                </div>
+            </div>
+            <!-- point cloud -->
+            <p>BiFuse++</p>
+            <div class="row center">
+                <img src="images/matterport/bifusev2_large.pdf" width="70%">
+            </div>
+            <!-- point cloud -->
+            <div class="wrapper">
+                <div class="image-container">
+                    <img id="rgbImage1" src="pcd/bifuse/1169_rgb.png" alt="RGB Image 1">
+                </div>
+                <div id="container1169" class="pcd_container">
+                    <div id="controls1169" class="controls">
+                        <label for="scale1">Scale:</label>
+                        <input type="range" id="scale1" name="scale" min="0.1" max="10" step="0.1" value="1">
+                        <label for="posX1">Position X:</label>
+                        <input type="range" id="posX1" name="posX" min="-10" max="10" step="0.1" value="0">
+                        <label for="posY1">Position Y:</label>
+                        <input type="range" id="posY1" name="posY" min="-10" max="10" step="0.1" value="0">
+                        <label for="posZ1">Position Z:</label>
+                        <input type="range" id="posZ1" name="posZ" min="-10" max="10" step="0.1" value="0">
+                        <label for="pointSize1">Point Size:</label>
+                        <input type="range" id="pointSize1" name="pointSize" min="0.001" max="0.1" step="0.001" value="0.001">
+                    </div>
+                </div>
+            </div>
+            <p>
+                <h5>Zero-shot Qualitative Improvements</h5>
+            </p>
+            This is the zero-shot qualitative improvements with backbone models (UniFuse and Bifuse++ are selected) trained on the entire Matterport3D dataset and test on Stanford2D3D test set.
+            (p) indicates using the pseudo ground truth training pipeline proposed in our methods.
+            <div class="row center">
+                <img src="images/zeroshot/zeroshot_unifuse_bifusev2.pdf" width="70%">
+            </div>
+            
+            <p><h5>In-the-wild Qualitative Improvements</h5></p>
+                We showcase zero-shot qualitative results using a combination of images captured by us and randomly sourced from the internet
+                <span class="footnote" 
+                title="Stig Nygaard, https://www.flickr.com/photos/stignygaard/49659694937, CC BY 2.0 DEED 
+                &#10;Dominic Alves, https://www.flickr.com/photos/dominicspics/28296671029/, CC BY 2.0 DEED 
+                &#10;Luca Biada, https://www.flickr.com/photos/pedroscreamerovsky/6873256488/, CC BY 2.0 DEED 
+                &#10;Luca Biada, https://www.flickr.com/photos/pedroscreamerovsky/6798474782/, CC BY 2.0 DEED">[1]</span>
+                to assess the model’s generalization ability. 
+                For privacy reasons, we have obscured the camera-man in the images.
+            </p>
+            <div class="row center">
+                <img src="images/realworld/in_the_wild_depth_mask.pdf" width="70%">
+                <img src="images/realworld/in_the_wild_pcl.pdf" width="70%">
+            </div>
+            
+            <div class="wrapper">
+                <div class="image-container">
+                    <img id="rgbImage1" src="pcd/Luca_Biada_flickr_2.jpeg" alt="RGB Image 1">
+                </div>
+                <div id="container1" class="pcd_container">
+                    <div id="controls1" class="controls">
+                        <label for="scale1">Scale:</label>
+                        <input type="range" id="scale1" name="scale" min="0.1" max="10" step="0.1" value="1">
+                        <label for="posX1">Position X:</label>
+                        <input type="range" id="posX1" name="posX" min="-10" max="10" step="0.1" value="0">
+                        <label for="posY1">Position Y:</label>
+                        <input type="range" id="posY1" name="posY" min="-10" max="10" step="0.1" value="0">
+                        <label for="posZ1">Position Z:</label>
+                        <input type="range" id="posZ1" name="posZ" min="-10" max="10" step="0.1" value="0">
+                        <label for="pointSize1">Point Size:</label>
+                        <input type="range" id="pointSize1" name="pointSize" min="0.001" max="0.1" step="0.001" value="0.05">
+                    </div>
+                </div>
+            </div>
+            <br>
+            <div class="wrapper">
+                <div class="image-container">
+                    <img id="rgbImage2" src="pcd/Luca_Biada_flickr_trainstation.jpeg" alt="RGB Image 2">
+                </div>
+                <div id="container2" class="pcd_container">
+                    <div id="controls2" class="controls">
+                        <label for="scale2">Scale:</label>
+                        <input type="range" id="scale2" name="scale" min="0.1" max="10" step="0.1" value="1">
+                        <label for="posX2">Position X:</label>
+                        <input type="range" id="posX2" name="posX" min="-10" max="10" step="0.1" value="0">
+                        <label for="posY2">Position Y:</label>
+                        <input type="range" id="posY2" name="posY" min="-10" max="10" step="0.1" value="0">
+                        <label for="posZ2">Position Z:</label>
+                        <input type="range" id="posZ2" name="posZ" min="-10" max="10" step="0.1" value="0">
+                        <label for="pointSize2">Point Size:</label>
+                        <input type="range" id="pointSize2" name="pointSize" min="0.001" max="0.1" step="0.001" value="0.05">
+                    </div>
+                </div>
+            </div>
+    <footer class="page-footer grey lighten-3">
+      <div class="footer-copyright center black-text">
+        Copyright © A.WangTW 2024
+      </div>
+    </footer>
+  
+    <!-- PCD -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="js/OrbitControls.js"></script>
+    <script src="js/PCDLoader.js"></script>
+    <script src="js/pcd.js"></script>
+    <!-- Origin -->
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="js/materialize.js"></script>
+    <script src="js/init.js"></script>
+  
+    
+  
+  </body></html>
