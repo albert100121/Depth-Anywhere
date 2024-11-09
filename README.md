@@ -11,7 +11,7 @@ This is the official implementation of Depth Anywhere, a project that proposes c
 [Ning-Hsu Wang](http://albert100121.github.io/), [Yu-Lun Liu](https://yulunalexliu.github.io/)<sup>1</sup>
 <sup>1</sup>[National Yang Ming Chiao Tung University](https://www.nycu.edu.tw/nycu/en/index)
 
-![](fig/teaser_v7.jpg)
+![](fig/teaser.jpg)
 
 
 #### News
