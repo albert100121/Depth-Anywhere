@@ -9,6 +9,12 @@ from torchvision import transforms
 from tqdm import tqdm
 
 from baseline_models.UniFuse.networks import UniFuse
+from baseline_models.BiFuseV2 import BiFuse
+import sys
+sys.path.append("baseline_models/HoHoNet/")
+from baseline_models.HoHoNet.lib.model.hohonet import HoHoNet
+sys.path.append("baseline_models/EGformer/")
+from baseline_models.EGformer.models.egformer import EGDepthModel
 from utils.Projection import py360_E2C
 
 
@@ -23,7 +29,7 @@ def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--input_dir', 
-        default='data/examples/', 
+        default='data/examples/sf3d', 
         help='Path to the input directory.')
     parser.add_argument(
         '--pretrained_weight', 
@@ -31,12 +37,27 @@ def get_args() -> argparse.Namespace:
         help='Path to the checkpoint.')
     parser.add_argument(
         '--output_dir', 
-        default='outputs/examples', 
+        default='outputs/', 
         help='Path to the output directory.')
     args = parser.parse_args()
 
+    # model name
+    args.baseline_model = os.path.split(
+        os.path.split(args.pretrained_weight)[0]
+        )[1]
+
+    # append output dir
+    data_name = os.path.basename(os.path.dirname(args.input_dir))
+    args.output_dir = os.path.join(args.output_dir, data_name)
+    ckpt_name = os.path.splitext(os.path.basename(args.pretrained_weight))[0]
+    args.output_dir = os.path.join(args.output_dir, args.baseline_model, ckpt_name)
+
+    args.requires_cube = False
+    if args.baseline_model.upper() in ('UNIFUSE'):
+        args.requires_cube = True
+
     if not os.path.isdir(args.input_dir):
-        raise FileNotFoundError
+        raise FileNotFoundError(f'{args.input_dir} not found!')
 
     return args
 
@@ -52,27 +73,67 @@ def load_data(input_dir: str) -> List[str]:
     return data_names
 
 
-
-def load_model(ckpt_path: str, device: str):
+def load_model(ckpt_path: str, device: str, model_name: str='UniFuse'):
     """Load pretrained model."""
 
-    # set arguments
-    model_dict = {
-        'num_layers': 18,
-        'equi_h': 512,
-        'equi_w': 1024,
-        'pretrained': True,
-        'max_depth': 10.0,
-        'fusion_type': 'cee',
-        'se_in_fusion': True
-    }
-    model = UniFuse(**model_dict)
+    print(f"Load baseline model: {model_name}'")
+    if model_name.upper() == 'UNIFUSE':
+        # set arguments
+        model_dict = {
+            'num_layers': 18,
+            'equi_h': 512,
+            'equi_w': 1024,
+            'pretrained': True,
+            'max_depth': 10.0,
+            'fusion_type': 'cee',
+            'se_in_fusion': True
+        }
+        model = UniFuse(**model_dict)
+    elif model_name.upper() == 'BIFUSEV2':
+        # set arguments
+        dnet_args = {
+            'layers': 34,
+            'CE_equi_h': [8, 16, 32, 64, 128, 256, 512]
+        }
+        model = BiFuse.SupervisedCombinedModel('outputs', dnet_args)
+    elif model_name.upper() == 'HOHONET':
+        model = HoHoNet(
+            emb_dim=256,
+            backbone_config={
+                'module': 'Resnet',
+                'kwargs': {
+                    'backbone': 'resnet50'}
+            },
+            decode_config={
+                'module': 'EfficientHeightReduction'},
+            refine_config={
+                'module': 'TransEn',
+                'kwargs': {
+                    'position_encode': 256,
+                    'num_layers': 1
+                    }
+            },
+            modalities_config={
+                'DepthEstimator': {
+                    'basis': 'dct',
+                    'n_components': 64,
+                    'loss': 'l1'
+                    }
+                }
+        )
+        model.forward = model.infer
+    elif model_name.upper() == 'EGFORMER':
+        model = EGDepthModel(hybrid=False)
+    else:
+        raise NotImplementedError(f'Baseline model {model_name} not implemented!')
+    
+    # to device
     model.to(device)
 
     # load pretrained weight
-    
     ckpt = torch.load(ckpt_path)
     model.load_state_dict(ckpt)
+    model.eval()
     
     return model
 
@@ -122,7 +183,7 @@ def main():
     # get device
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     data_names = load_data(args.input_dir)
-    model = load_model(args.pretrained_weight, device)
+    model = load_model(args.pretrained_weight, device, args.baseline_model)
     model.eval()
 
     for name in tqdm(data_names, desc='run model images'):
@@ -130,14 +191,17 @@ def main():
         output_path = os.path.join(args.output_dir, name)
 
         rgb, cube = load_rgb(path, device=device)
-        print(rgb.shape, cube.shape)
         with torch.no_grad():
-            outputs = model(rgb, cube)
-        depth = outputs['pred_depth'][0][0].cpu().numpy()
-        print(depth.shape, depth.max(), depth.min())
+            if args.requires_cube:
+                outputs = model(rgb, cube)
+            else:
+                outputs = model(rgb)
+
+        depth = outputs['pred_depth'].squeeze().cpu().numpy()
         depth = depth - depth.min()
         depth = depth / depth.max()
         depth = (depth * 255).astype(np.uint8)
+        print(output_path)
         cv2.imwrite(output_path, depth)
     
 
