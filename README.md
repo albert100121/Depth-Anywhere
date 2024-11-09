@@ -53,6 +53,7 @@ You can download checkpoints from [link](https://drive.google.com/file/d/1yE555x
 ### Running
 
 **Inference**
+
 For model inferernce
 ```bash
 python inference.py \
@@ -62,8 +63,11 @@ python inference.py \
 ```
 
 **Training**
+
 For model training, we follow the training settings of all baseline_model in our paper for a fair comparison. Feel free to tune the hyperparameters or change the student/teacher models to achieve superior results.
+
 Training code will be out soon...
+
 #### Acknowledgement
 **We sincerely appreciate the following research / code / datasets that made our research possible**
 
