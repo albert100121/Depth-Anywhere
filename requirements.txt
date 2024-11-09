@@ -1,0 +1,31 @@
+# UniFuse
+torch==2.3.0
+torchvision==0.18.0
+tensorboard==2.14.0
+PyYAML==6.0.1
+timm==0.9.12
+einops==0.7.0
+opencv-python-headless==4.9.0.80
+numpy==1.24.4
+scipy==1.10.0
+pillow==10.2.0
+tqdm==4.66.2
+matplotlib==3.7.5
+open3d==0.18.0
+
+# Depth anything
+gradio_imageslider==0.0.18
+gradio==4.14.0
+huggingface-hub==0.20.3
+
+# SAM
+segment-anything @ git+https://github.com/facebookresearch/segment-anything.git@6fdee8f2727f4506cfbbe553e23b895e27956588
+
+# BiFuseV2
+imageio==2.34.1
+# attrdict
+pytorch-lightning==2.2.4
+pytorch3d @ git+https://github.com/facebookresearch/pytorch3d.git@aec76bb4c859087f209351cabc23d2f25521321f
+
+# HoHoNet
+Shapely==1.8.2 
