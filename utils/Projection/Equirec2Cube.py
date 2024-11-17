@@ -54,6 +54,9 @@ class Equirec2Cube(nn.Module):
             grids.append(torch.FloatTensor(lonlat[None, ...]))
         
         return grids
+
+    def GetGrid(self):
+        return self._getCubeGrid()
     
     def forward(self, batch, mode='bilinear'):
         [_, _, h, w] = batch.shape
