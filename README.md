@@ -65,7 +65,7 @@ python inference.py \
 #### Training
 
 1. **Data Preparation**
-    In order to reproduce the paper setting, you will need to download the following datasets under `data/`. We follow the official split for these datasets.
+    In order to reproduce the paper setting, you will need to download the following datasets under [data](data/). We follow the official split for these datasets.
     - [Matterport3D](https://niessner.github.io/Matterport/)
     - [Stanford2D3D](https://github.com/alexsax/2D-3D-Semantics)
     - [Structured3D](https://structured3d-dataset.org/)
@@ -73,7 +73,7 @@ python inference.py \
 2. **Model Training**
     For model training, we follow the training settings of all baseline_model in our paper for a fair comparison. **Feel free to tune the hyperparameters or change the student/teacher models to achieve superior results.**
 
-    We put example config files of four models used in our paper under `config/`
+    We put example config files of four models used in our paper under [configs](configs/)
     - [UniFuse](https://github.com/alibaba/UniFuse-Unidirectional-Fusion)
     - [BiFuse++](https://github.com/fuenwang/BiFusev2/tree/3c436aa848bd95848b2ff250cadd14e90e82f35c/BiFusev2)
     - [HoHoNet](https://github.com/sunset1995/HoHoNet)
