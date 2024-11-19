@@ -1,9 +1,5 @@
-import os
-import sys
-import time
 import argparse
 import configparser
-from threading import Thread
 
 
 def force_config_value_type(val):
@@ -102,7 +98,6 @@ def parse_args():
     """
     Pre-processing setting
     """
-    # parser.add_argument('--base_height', default=512, type=int)
     parser.add_argument('--h', default=512, type=int, help='loader process height')
     parser.add_argument('--w', default=1024, type=int, help='loader process width')
     parser.add_argument('--rgb_mean', default=[0.485, 0.456, 0.406], nargs=3, type=float)

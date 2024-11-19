@@ -320,15 +320,14 @@ def val(
     epoch: int, 
     writer: SummaryWriter=None, 
     evaluator: Affine_Inv_Evaluator=None, 
-    mode='Valid', 
-    save_log_flag: bool=True):
+    mode='Valid'):
     """Eval function."""
     model.eval()
     with torch.no_grad():
         pbar = tqdm(dataloader)
         pbar.set_description("{} Epoch_{}".format(mode, epoch))
         total_loss = defaultdict(float)
-        for batch_idx, inputs in enumerate(pbar):
+        for _, inputs in enumerate(pbar):
             for key, ipt in inputs.items():
                 if key not in ["rgb", "rgb_name"]:
                     inputs[key] = ipt.to(args.device)
@@ -352,11 +351,10 @@ def val(
                 total_loss[f'total_{k}'] += v.data.cpu().numpy() / len(dataloader)
 
         # Evaluator to shell and tensorboard
-        for i, key in enumerate(evaluator.metrics.keys()):
+        for _, key in enumerate(evaluator.metrics.keys()):
             total_loss[f'total_{key}'] = np.array(evaluator.metrics[key].avg.cpu())
         evaluator.print()
-        if save_log_flag:
-            save_log(writer, inputs, outputs, total_loss, args)
+        save_log(writer, inputs, outputs, total_loss, args)
 
 
 def main_joint_unlabel():
@@ -410,7 +408,7 @@ def main_joint_unlabel():
             val(args, model, test_loader, epoch, writer['test'], evaluator, mode='Test')
         if zeroshot_loader is not None:
             zeroshot_evaluator.reset_eval_metrics()
-            val(args, model, zeroshot_loader, epoch, writer['zeroshot'], zeroshot_evaluator, mode='zeroshot')
+            val(args, model, zeroshot_loader, epoch, writer['zeroshot'], zeroshot_evaluator, mode='Zeroshot')
         
         if (epoch + 1) % args.save_every == 0:
             save_model(model, optimizer, args)
