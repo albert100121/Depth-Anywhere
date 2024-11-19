@@ -20,14 +20,10 @@ def get_model(model_name, device, pretrained_dict=None, model_dict=None):
             'layers': model_dict['layers'],
             'CE_equi_h': model_dict['ce_equi_h']
         }
-        if 'sigmoid' in model_dict:
-            print("USE Sigmoid relative depth")
-            model = BiFuse.SupervisedCombinedModel(model_dict['save_path'], dnet_args, sigmoid=True)
-        else:
-            model = BiFuse.SupervisedCombinedModel(model_dict['save_path'], dnet_args)
+        model = BiFuse.SupervisedCombinedModel(model_dict['save_path'], dnet_args)
     elif model_name.upper() == 'HOHONET':
         model = HoHoNet(
-            emb_dim=256,
+            emb_dim=model_dict['emb_dim'],
             backbone_config={
                 'module': model_dict['backbone_module'],
                 'kwargs': {
