@@ -4,7 +4,7 @@ import sys
 import torch
 
 from baseline_models.UniFuse.networks import UniFuse
-from baseline_models import BiFuseV2
+from baseline_models.BiFuseV2 import BiFuse
 sys.path.append("baseline_models/HoHoNet/")
 from baseline_models.HoHoNet.lib.model.hohonet import HoHoNet
 sys.path.append("baseline_models/EGformer/")
@@ -16,43 +16,42 @@ def get_model(model_name, device, pretrained_dict=None, model_dict=None):
     if model_name.upper() == 'UNIFUSE':
         model = UniFuse(**model_dict)
     elif model_name.upper() == 'BIFUSEV2':
-        # BiFuseV2
         dnet_args = {
             'layers': model_dict['layers'],
             'CE_equi_h': model_dict['ce_equi_h']
         }
         if 'sigmoid' in model_dict:
             print("USE Sigmoid relative depth")
-            model = BiFuseV2.BiFuse.SupervisedCombinedModelDict(model_dict['save_path'], dnet_args, sigmoid=True)
+            model = BiFuse.SupervisedCombinedModel(model_dict['save_path'], dnet_args, sigmoid=True)
         else:
-            model = BiFuseV2.BiFuse.SupervisedCombinedModelDict(model_dict['save_path'], dnet_args)
+            model = BiFuse.SupervisedCombinedModel(model_dict['save_path'], dnet_args)
     elif model_name.upper() == 'HOHONET':
         model = HoHoNet(
             emb_dim=256,
             backbone_config={
-                'module': 'Resnet',
+                'module': model_dict['backbone_module'],
                 'kwargs': {
-                    'backbone': 'resnet50'}
+                    'backbone': model_dict['backbone']}
             },
             decode_config={
-                'module': 'EfficientHeightReduction'},
+                'module': model_dict['decode_module']},
             refine_config={
-                'module': 'TransEn',
+                'module': model_dict['refine_module'],
                 'kwargs': {
-                    'position_encode': 256,
-                    'num_layers': 1
+                    'position_encode': model_dict['position_encode'],
+                    'num_layers': model_dict['num_layers']
                     }
             },
             modalities_config={
                 'DepthEstimator': {
-                    'basis': 'dct',
-                    'n_components': 64,
-                    'loss': 'l1'
+                    'basis': model_dict['modalities_basis'],
+                    'n_components': model_dict['modalities_n_components'],
+                    'loss': model_dict['modalities_loss']
                     }
                 }
         )
     elif model_name.upper() == 'EGFORMER':
-        model = EGDepthModel(hybrid=False)
+        model = EGDepthModel(hybrid=model_dict['hybrid'])
     else:
         raise NotImplementedError(f"{model_name} not implemented")
     model.to(device)
