@@ -28,7 +28,6 @@ class UnlabelDataset(LabelDataset):
         hue=0.1,
         mean=[0.485, 0.456, 0.406],
         std=[0.229, 0.224, 0.225],
-        relative=False,
         device='cpu',
         need_cube=False,
         ):
@@ -56,7 +55,6 @@ class UnlabelDataset(LabelDataset):
             hue=hue,
             mean=mean,
             std=std,
-            relative=relative,
             device=device,
             need_cube=need_cube,
         )

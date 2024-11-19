@@ -26,7 +26,6 @@ def get_unlabel_data(args):
         mean=args.rgb_mean,
         std=args.rgb_std,
         is_training=True,
-        relative=args.relative,
         device=args.device,
         need_cube=args.need_cube)
 
@@ -48,15 +47,16 @@ def get_unlabel_data(args):
         mean=args.rgb_mean,
         std=args.rgb_std,
         is_training=True,
-        relative=args.relative,
         device=args.device,
         need_cube=args.need_cube)
     unlabel_loader = DataLoader(unlabel_dataset, args.batch_size_unlabel, shuffle=True,
                              num_workers=args.num_workers, pin_memory=True, drop_last=True)
     # VALID
     if args.val_txt:
+        if not hasattr(args, 'val_root'):
+            args.val_root = args.root
         val_dataset = LabelDataset(
-            root_dir=args.root, 
+            root_dir=args.val_root, 
             list_file=args.val_txt, 
             height=args.h, 
             width=args.w, 
@@ -66,7 +66,6 @@ def get_unlabel_data(args):
             mean=args.rgb_mean,
             std=args.rgb_std,
             is_training=False,
-            relative=args.relative,
             device=args.device,
             need_cube=args.need_cube)
         val_loader = DataLoader(val_dataset, args.batch_size_val, shuffle=False,
@@ -74,8 +73,10 @@ def get_unlabel_data(args):
 
     # TEST
     if args.test_txt:
+        if not hasattr(args, 'test_root'):
+            args.test_root = args.root
         test_dataset = LabelDataset(
-            root_dir=args.root, 
+            root_dir=args.test_root, 
             list_file=args.test_txt, 
             height=args.h, 
             width=args.w, 
@@ -85,7 +86,6 @@ def get_unlabel_data(args):
             mean=args.rgb_mean,
             std=args.rgb_std,
             is_training=False,
-            relative=args.relative,
             device=args.device,
             need_cube=args.need_cube)
         test_loader = DataLoader(test_dataset, args.batch_size_val, shuffle=False,
@@ -102,7 +102,6 @@ def get_unlabel_data(args):
             mean=args.rgb_mean,
             std=args.rgb_std,
             is_training=False,
-            relative=args.relative,
             device=args.device,
             need_cube=args.need_cube)
         zero_shot_loader = DataLoader(zero_shot_dataset, args.batch_size_val, shuffle=False,

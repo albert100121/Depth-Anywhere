@@ -29,25 +29,10 @@ np.float = np.float32
 
 from utils import parse_args, get_model, get_optim, save_model, save_log, get_unlabel_data
 from utils.metric import Affine_Inv_Evaluator
-# sys.path.append("/project/albert/distill_pers/Depth_Anything_exp/")
-# from Depth_Anything.depth_anything.dpt import DepthAnything
 from foundation_models.depth_anything.dpt import DepthAnything
-# sys.path.append("/project/albert/distill_pers/Depth_Anything_exp/utils/CE")
-# from Depth_Anything_exp.utils.CE import Equirec2Cube, Cube2Equirec, EquirecDepth2Points
-# from Depth_Anything_exp.utils.CE.Equirec2Cube import EquirecRotate2 as EquirecRotate
 from utils.Projection.Cube2Equirec import Cube2Equirec
 from utils.Projection.Equirec2Cube import Equirec2Cube
 from utils.Projection import EquirecGrid as EG
-from utils import Conversion
-
-# sys.path.append("/project/albert/distill_pers/Depth_Anything_exp/utils/CE")
-# from Depth_Anything_exp.utils.CE import Depth2Points, Equirec2Cube, Cube2Equirec
-# sys.path.append("/project/albert/distill_pers/baseline_models/UniFuse/UniFuse")
-# from baseline_models.UniFuse.UniFuse.networks.layers import Cube2Equirec as PanoC2E
-# from baseline_models.UniFuse.UniFuse.datasets.util import Equirec2Cube as PanoE2C
-# from utils.metric import affine_invariant
-# BiFuseV2 Rotate
-# sys.path.append("/project/albert/distill_pers/baseline_models/BiFusev2")
 from utils.Projection import EquirecRotate as ER2
 
 
@@ -107,7 +92,6 @@ class ProcessDABatch():
         self.w = w
         self.device = 'cuda' if CUDA else 'cpu'
         self.BiFuse_C2E = Cube2Equirec(h//2, h)
-        # self.d2p = EG.to_xyz
         self.EG = EG()
         self.BiFuse_E2C = Equirec2Cube(cube_dim=h//2, equ_h=h, FoV=90)
         if CUDA:
@@ -124,7 +108,8 @@ class ProcessDABatch():
         cube_batch = gt_cube.shape[0]
 
         pred_equi_disp = outputs["pred_depth"][equi_batch:].clone()     # call by value with gradient
-        # by fuse doesn't have sigmoid
+        
+        # shift the scale-inv output disparity to start from 0 to fit physical projection
         shift = pred_equi_disp.min()
         if shift < 0:
             pred_equi_disp = pred_equi_disp - shift
@@ -204,7 +189,7 @@ def train_joint_unlabel(
     model.train()
     total_loss = defaultdict(float)
 
-    # label first
+    # label tqdm
     pbar = tqdm(label_loader)
     pbar.set_description("Training Epoch_{} on label".format(epoch))
     
@@ -214,10 +199,10 @@ def train_joint_unlabel(
         """
         iter_idx, unlabel = next(iter_loader)
         if iter_idx == len(unlabel_loader) - 1:
-            # reset label loader
+            # reset unlabel loader
             iter_loader = enumerate(unlabel_loader)
         
-        outputs = process_both(args, batch_idx, inputs, unlabel, len(label_loader), ProB, DA, model, optimizer, total_loss)
+        outputs = process_both(args, inputs, unlabel, len(label_loader), ProB, DA, model, optimizer, total_loss)
         
     save_log(writer, inputs, outputs, total_loss, args)
     return iter_loader
@@ -225,7 +210,6 @@ def train_joint_unlabel(
 
 def process_both(
         args: argparse.ArgumentParser.parse_args,
-        batch_idx: int,
         inputs: Dict[str, torch.tensor],
         unlabel: torch.utils.data.DataLoader,
         data_len: int,
@@ -244,7 +228,6 @@ def process_both(
     # Project CUBE with rotated equi ##################
     pseudo_equi = unlabel["normalized_rgb_noaug"]
     pseudo_equi, rot_vec = ProB.randRotate(pseudo_equi)
-    # BiFuse_cube = ProB.BiFuse_E2C.ToCubeTensor(pseudo_equi) # BDFLRU
     BiFuse_cube = ProB.BiFuse_E2C(pseudo_equi) # BDFLRU
 
 
@@ -271,7 +254,6 @@ def process_both(
         
         # rotate mask based on DA input
         equi_mask_sky = ProB.rotate(inputs['pseudo_mask_equi'].clone().float(), ProB.rot_vec)
-        # mask_cube_sky = ProB.BiFuse_E2C.ToCubeTensor(equi_mask_sky).floor() == 1
         mask_cube_sky = ProB.BiFuse_E2C(equi_mask_sky).floor() == 1
 
     
@@ -339,8 +321,7 @@ def val(
     writer: SummaryWriter=None, 
     evaluator: Affine_Inv_Evaluator=None, 
     mode='Valid', 
-    save_log_flag: bool=True, 
-    save_img_flag: bool=False):
+    save_log_flag: bool=True):
     """Eval function."""
     model.eval()
     with torch.no_grad():

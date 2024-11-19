@@ -31,7 +31,6 @@ class LabelDataset(data.Dataset):
         rand_gamma=False,
         mean=[0.485, 0.456, 0.406],
         std=[0.229, 0.224, 0.225],
-        relative=False,
         device='cpu',
         need_cube=False,
         ):
@@ -68,7 +67,6 @@ class LabelDataset(data.Dataset):
 
         self.to_tensor = transforms.ToTensor()
         self.normalize = transforms.Normalize(mean=mean, std=std)
-        self.relative = relative
         self.device = device
 
         # CUBE
@@ -89,7 +87,6 @@ class LabelDataset(data.Dataset):
         inputs = {}
 
         rgb_name = os.path.join(self.root_dir, self.rgb_depth_list[idx][0])
-        # inputs['rgb_name'] = self.rgb_depth_list[idx][0]
         inputs['rgb_name'] = rgb_name
         rgb = cv2.imread(rgb_name)
         rgb = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)
@@ -157,12 +154,11 @@ class LabelDataset(data.Dataset):
         inputs["val_mask"] = ((inputs["gt_depth"] > 0) & (inputs["gt_depth"] <= self.max_depth_meters)
                                 & ~torch.isnan(inputs["gt_depth"]))
 
-        if self.relative:
-            inputs["gt_metric_depth"] = inputs["gt_depth"].clone()
-            inputs["gt_depth"][inputs["val_mask"]] = 1 / inputs["gt_depth"][inputs["val_mask"]]
-            inputs["gt_depth"] *= inputs["val_mask"].float()
-            if inputs["gt_depth"][inputs["val_mask"]].any():
-                inputs["gt_depth"][inputs["val_mask"]] -= inputs["gt_depth"][inputs["val_mask"]].min()
-                inputs["gt_depth"][inputs["val_mask"]] /= inputs["gt_depth"][inputs["val_mask"]].max()
+        inputs["gt_metric_depth"] = inputs["gt_depth"].clone()
+        inputs["gt_depth"][inputs["val_mask"]] = 1 / inputs["gt_depth"][inputs["val_mask"]]
+        inputs["gt_depth"] *= inputs["val_mask"].float()
+        if inputs["gt_depth"][inputs["val_mask"]].any():
+            inputs["gt_depth"][inputs["val_mask"]] -= inputs["gt_depth"][inputs["val_mask"]].min()
+            inputs["gt_depth"][inputs["val_mask"]] /= inputs["gt_depth"][inputs["val_mask"]].max()
 
         return inputs

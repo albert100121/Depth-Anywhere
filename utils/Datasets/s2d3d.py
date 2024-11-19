@@ -10,7 +10,7 @@ from utils.Datasets import LabelDataset
 
 
 class Stanford2D3D(LabelDataset):
-    """Unlabeled Dataset"""
+    """Stanford2D3D Dataset"""
 
     def __init__(
         self, 
@@ -28,7 +28,6 @@ class Stanford2D3D(LabelDataset):
         hue=0.1,
         mean=[0.485, 0.456, 0.406],
         std=[0.229, 0.224, 0.225],
-        relative=False,
         device='cpu',
         need_cube=False,
         ):
@@ -56,7 +55,6 @@ class Stanford2D3D(LabelDataset):
             hue=hue,
             mean=mean,
             std=std,
-            relative=relative,
             device=device,
             need_cube=need_cube,
         )
@@ -99,7 +97,6 @@ class Stanford2D3D(LabelDataset):
             aug_rgb = rgb
 
         if self.need_cube:
-            #cube_rgb, cube_gt_depth = self.e2c.run(rgb, gt_depth[..., np.newaxis])
             cube_rgb = self.e2c.run(rgb)
             cube_aug_rgb = self.e2c.run(aug_rgb)
 
@@ -120,17 +117,9 @@ class Stanford2D3D(LabelDataset):
         inputs["val_mask"] = ((inputs["gt_depth"] > 0) & (inputs["gt_depth"] <= self.max_depth_meters)
                                 & ~torch.isnan(inputs["gt_depth"]))
 
-        if self.relative:
-            inputs["gt_metric_depth"] = inputs["gt_depth"].clone()
-            inputs["gt_depth"][inputs["val_mask"]] = 1 / inputs["gt_depth"][inputs["val_mask"]]
-            inputs["gt_depth"][inputs["val_mask"]] -= inputs["gt_depth"][inputs["val_mask"]].min()
-            inputs["gt_depth"][inputs["val_mask"]] /= inputs["gt_depth"][inputs["val_mask"]].max()
-        
-        """
-        cube_gt_depth = torch.from_numpy(np.expand_dims(cube_gt_depth[..., 0], axis=0))
-        inputs["cube_gt_depth"] = cube_gt_depth
-        inputs["cube_val_mask"] = ((cube_gt_depth > 0) & (cube_gt_depth <= self.max_depth_meters)
-                                   & ~torch.isnan(cube_gt_depth))
-        """
+        inputs["gt_metric_depth"] = inputs["gt_depth"].clone()
+        inputs["gt_depth"][inputs["val_mask"]] = 1 / inputs["gt_depth"][inputs["val_mask"]]
+        inputs["gt_depth"][inputs["val_mask"]] -= inputs["gt_depth"][inputs["val_mask"]].min()
+        inputs["gt_depth"][inputs["val_mask"]] /= inputs["gt_depth"][inputs["val_mask"]].max()
 
         return inputs
