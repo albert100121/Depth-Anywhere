@@ -221,6 +221,36 @@ a:hover:not(.summary):hover{
    margin-right: 40px;
 }
 
+.video-container {
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+   align-items: center;
+   padding: 10px;
+   height: 100vh;
+ }
+ 
+ .video-wrapper {
+   position: relative;
+   width: 50%;  /* Set the desired width of the video wrapper */
+   max-width: 1600px;  /* Optional: You can limit the maximum width */
+   height: 50%;  /* Set the height to 50% of the viewport height */
+   background-color: #fff;  /* Optional: background color */
+}
+ 
+ .video-wrapper iframe {
+   position: absolute;
+   top: 0;
+   left: 0;
+   width: 100%;
+   height: 100%;
+ }
+ 
+ .title {
+   margin-bottom: 20px;
+   text-align: center;
+ }
+
 .image-container {
    flex: 1;
    display: flex;
